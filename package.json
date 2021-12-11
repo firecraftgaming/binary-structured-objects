@@ -1,0 +1,31 @@
+{
+  "name": "binary-structured-objects",
+  "version": "0.0.1",
+  "description": "Binary Structured Objects is a javascript library for creating data schemas and serialize or deserialize javascript to and from binary",
+  "main": "dist/index.js",
+  "scripts": {
+    "build": "tsc",
+    "test": "mocha 'tests/**/*.test.ts'"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/firecraftgaming/binary-structured-objects.git"
+  },
+  "author": "Eliyah Sundström",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/firecraftgaming/binary-structured-objects/issues"
+  },
+  "homepage": "https://github.com/firecraftgaming/binary-structured-objects#readme",
+  "devDependencies": {
+    "@testdeck/mocha": "^0.1.2",
+    "@types/node": "^16.11.12",
+    "chai": "^4.3.4",
+    "mocha": "^9.1.1",
+    "nyc": "^15.1.0",
+    "ts-mockito": "^2.6.1",
+    "ts-node": "^10.2.1",
+    "tsconfig-paths": "^3.11.0",
+    "typescript": "^4.4.3"
+  }
+}
