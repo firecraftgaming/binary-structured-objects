@@ -1,11 +1,8 @@
 import { Result, Schema, SchemaArray, SchemaBasicType, SchemaType as AnySchema } from "index";
+import { BinaryStructuredObjectsSchema } from "schema";
 
 export interface RefType {
   kind: 'ref';
-  type: string;
-}
-export interface AliasType {
-  kind: 'alias';
   type: string;
 }
 export interface ArrayType {
@@ -24,7 +21,7 @@ export interface SchemaType {
   construct?: (type: TypeConstruct) => any;
 }
 
-export type Type = RefType | AliasType | ArrayType | SchemaType;
+export type Type = RefType | ArrayType | SchemaType;
 
 export interface TypeConstruct {
   [key: string]: any;
@@ -37,11 +34,6 @@ function construct(types: BinaryStructuredObjectsSchema['types'], type: Type, va
       if (!refType) return value;
 
       return construct(types, refType, value);
-    case 'alias':
-      return construct(types, {
-        kind: 'ref',
-        type: type.type,
-      }, value);
     case 'array':
       return (value as Array<Result>).map(item => construct(types, type.type, item));
     case 'schema': {
@@ -84,15 +76,6 @@ export function constructSchema(types: BinaryStructuredObjectsSchema['types'], t
   return constructor(data);
 }
 
-export interface BinaryStructuredObjectsSchema {
-  types: {
-    [key: string]: Type;
-  };
-  schemas: {
-    [key: string]: Schema;
-  };
-}
-
 function buildType(types: BinaryStructuredObjectsSchema['types'], type: Type): AnySchema {
   switch (type.kind) {
     case 'ref':
@@ -102,11 +85,6 @@ function buildType(types: BinaryStructuredObjectsSchema['types'], type: Type): A
       } as SchemaBasicType;
 
       return buildType(types, refType);
-    case 'alias':
-      return buildType(types, {
-        kind: 'ref',
-        type: type.type,
-      });
     case 'array':
       const arrayType = buildType(types, type.type);
       return {
@@ -147,11 +125,6 @@ function buildData(types: BinaryStructuredObjectsSchema['types'], type: Type, da
       if (!refType) return data;
 
       return buildData(types, refType, data);
-    case 'alias':
-      return buildData(types, {
-        kind: 'ref',
-        type: type.type,
-      }, data);
     case 'array':
       return (data as Array<any>).map(item => buildData(types, type.type, item));
     case 'schema':
@@ -173,61 +146,58 @@ export function buildDataSchema(types: BinaryStructuredObjectsSchema['types'], t
   return required.concat(optionals);
 }
 
-function importSchema(path): BinaryStructuredObjectsSchema {
-  const types: BinaryStructuredObjectsSchema['types'] = {
-    ID: {
-      kind: 'alias',
-      type: 'string',
-    },
-    Presentation: {
-      kind: 'schema',
-      type: {
-        id: {
-          type: {
-            kind: 'ref',
-            type: 'ID',
-          },
-          optional: false,
-        }
-      },
-    },
-    Library: {
-      kind: 'schema',
-      type: {
-        id: {
-          type: {
-            kind: 'ref',
-            type: 'ID',
-          },
-          optional: false,
-        },
-        name: {
-          type: {
-            kind: 'ref',
-            type: 'string',
-          },
-          optional: false,
-        },
-        presentations: {
-          type: {
-            kind: 'array',
-            type: {
-              kind: 'ref',
-              type: 'Presentation',
-            },
-          },
-          optional: false,
-        },
-      },
-    }
-  };
+// function defaultSchema(): BinaryStructuredObjectsSchema {
+//   const types: BinaryStructuredObjectsSchema['types'] = {
+//     ID: {
+//       kind: 'alias',
+//       type: 'string',
+//     },
+//     Presentation: {
+//       kind: 'schema',
+//       type: {
+//         id: {
+//           type: {
+//             kind: 'ref',
+//             type: 'ID',
+//           },
+//           optional: false,
+//         }
+//       },
+//     },
+//     Library: {
+//       kind: 'schema',
+//       type: {
+//         id: {
+//           type: {
+//             kind: 'ref',
+//             type: 'ID',
+//           },
+//           optional: false,
+//         },
+//         name: {
+//           type: {
+//             kind: 'ref',
+//             type: 'string',
+//           },
+//           optional: false,
+//         },
+//         presentations: {
+//           type: {
+//             kind: 'array',
+//             type: {
+//               kind: 'ref',
+//               type: 'Presentation',
+//             },
+//           },
+//           optional: false,
+//         },
+//       },
+//     }
+//   };
 
-  return {
-    types,
-    schemas: {
-      Library: buildSchema(types, types.Library as SchemaType),
-    }
-  };
-}
+//   return new BinaryStructuredObjectsSchema(types, {
+//     Library: buildSchema(types, types.Library as SchemaType),
+//   });
+// }
 
 export {};

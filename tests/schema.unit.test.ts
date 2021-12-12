@@ -1,11 +1,11 @@
 import { suite, test, should } from './utility';
 import { expect } from 'chai';
 
-import { buildDataSchema, buildSchema, constructSchema, SchemaType } from '../src/api';
-import { BinaryLanguageFile } from '../src';
-import { BinaryStructuredObjectsSchema } from '../src/schema';
+import * as fs from 'fs';
+import { BinaryStructuredObjectsSchema, BinaryStructuredObjectsTypes } from '../src/schema';
 
-const testing_types: BinaryStructuredObjectsSchema['types'] = {
+const file = fs.readFileSync(__dirname + '/files/schema.bsos', 'utf8');
+const testing_types: BinaryStructuredObjectsTypes = {
   ID: {
     kind: 'ref',
     type: 'string',
@@ -90,32 +90,6 @@ const testing_types: BinaryStructuredObjectsSchema['types'] = {
     },
   }
 };
-
-const test_data = {
-  id: '1',
-  name: 'Test Library',
-  books: [
-    {
-      id: '1',
-      title: 'Test Book',
-      author: 'Test Author',
-      pages: 100,
-      bestSeller: true,
-      reviews: [
-        'Test Review 1',
-        'Test Review 2',
-      ]
-    },
-    {
-      id: '2',
-      title: 'Test Book 2',
-      author: 'Test Author 2',
-      pages: 200,
-      bestSeller: false,
-    }
-  ]
-};
-
 const test_schema = {
   type: 'schema',
 
@@ -160,37 +134,19 @@ const test_schema = {
   ],
   optionals: []
 };
+const test_schemas = {
+  Library: test_schema,
+}
 
 should;
-@suite class ApiUnitTests {
+@suite class SchemaUnitTests {
   before() {
 
   }
-
   
-  @test 'test building BSOS type to binary schema'() {
-    const result = buildSchema(testing_types, testing_types.Library as SchemaType);    
-    expect(result.type).to.equal(test_schema.type);
-    expect(result.required).to.be.an('array').that.does.have.deep.members(test_schema.required);
-    expect(result.optionals).to.be.an('array').that.does.have.deep.members(test_schema.optionals);
-  }
-  
-  @test 'test building BSOS type to binary intermediate and back'() {
-    const build = buildDataSchema(testing_types, testing_types.Library as SchemaType, test_data);
-    const result = constructSchema(testing_types, testing_types.Library as SchemaType, build);
-
-    expect(result).to.deep.equal(test_data);
-  }
-
-  @test 'test building BSOS type to binary and back'() {
-    const schema = buildSchema(testing_types, testing_types.Library as SchemaType);    
-
-    const build_bi = buildDataSchema(testing_types, testing_types.Library as SchemaType, test_data);
-    const build = BinaryLanguageFile.build(build_bi, schema);
-
-    const parse_bi = BinaryLanguageFile.parse(build, schema);
-    const parse = constructSchema(testing_types, testing_types.Library as SchemaType, parse_bi);
-
-    expect(parse).to.deep.equal(test_data);
+  @test 'test building BSOS types from schema file'() {
+    const schema = new BinaryStructuredObjectsSchema(file);
+    expect(schema.types).to.deep.equal(testing_types);
+    expect(schema.schemas).to.deep.equal(test_schemas);
   }
 }
