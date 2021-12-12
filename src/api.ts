@@ -1,5 +1,5 @@
-import { Result, Schema, SchemaArray, SchemaBasicType, SchemaType as AnySchema } from "index";
-import { BinaryStructuredObjectsSchema } from "schema";
+import { Result, Schema, SchemaArray, SchemaBasicType, SchemaType as AnySchema } from "./binary";
+import { BinaryStructuredObjectsSchema } from "./schema";
 
 export interface RefType {
   kind: 'ref';
@@ -131,7 +131,9 @@ function buildData(types: BinaryStructuredObjectsSchema['types'], type: Type, da
       return buildDataSchema(types, type, data);
   }
 }
-export function buildDataSchema(types: BinaryStructuredObjectsSchema['types'], type: SchemaType, data: Schema): Array<Result> {
+export function buildDataSchema(types: BinaryStructuredObjectsSchema['types'], type: SchemaType, data: any): Array<Result> {
+  if ('serialize' in data) return buildDataSchema(types, type, data.serialize());
+
   const required = [];
   const optionals = [];
   const keys = Object.keys(type.type);
@@ -145,59 +147,3 @@ export function buildDataSchema(types: BinaryStructuredObjectsSchema['types'], t
 
   return required.concat(optionals);
 }
-
-// function defaultSchema(): BinaryStructuredObjectsSchema {
-//   const types: BinaryStructuredObjectsSchema['types'] = {
-//     ID: {
-//       kind: 'alias',
-//       type: 'string',
-//     },
-//     Presentation: {
-//       kind: 'schema',
-//       type: {
-//         id: {
-//           type: {
-//             kind: 'ref',
-//             type: 'ID',
-//           },
-//           optional: false,
-//         }
-//       },
-//     },
-//     Library: {
-//       kind: 'schema',
-//       type: {
-//         id: {
-//           type: {
-//             kind: 'ref',
-//             type: 'ID',
-//           },
-//           optional: false,
-//         },
-//         name: {
-//           type: {
-//             kind: 'ref',
-//             type: 'string',
-//           },
-//           optional: false,
-//         },
-//         presentations: {
-//           type: {
-//             kind: 'array',
-//             type: {
-//               kind: 'ref',
-//               type: 'Presentation',
-//             },
-//           },
-//           optional: false,
-//         },
-//       },
-//     }
-//   };
-
-//   return new BinaryStructuredObjectsSchema(types, {
-//     Library: buildSchema(types, types.Library as SchemaType),
-//   });
-// }
-
-export {};

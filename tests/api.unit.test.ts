@@ -2,7 +2,7 @@ import { suite, test, should } from './utility';
 import { expect } from 'chai';
 
 import { buildDataSchema, buildSchema, constructSchema, SchemaType } from '../src/api';
-import { BinaryLanguageFile } from '../src';
+import { BinaryTranslation } from '../src/binary';
 import { BinaryStructuredObjectsSchema } from '../src/schema';
 
 const testing_types: BinaryStructuredObjectsSchema['types'] = {
@@ -186,9 +186,9 @@ should;
     const schema = buildSchema(testing_types, testing_types.Library as SchemaType);    
 
     const build_bi = buildDataSchema(testing_types, testing_types.Library as SchemaType, test_data);
-    const build = BinaryLanguageFile.build(build_bi, schema);
+    const build = BinaryTranslation.build(build_bi, schema);
 
-    const parse_bi = BinaryLanguageFile.parse(build, schema);
+    const parse_bi = BinaryTranslation.parse(build, schema);
     const parse = constructSchema(testing_types, testing_types.Library as SchemaType, parse_bi);
 
     expect(parse).to.deep.equal(test_data);

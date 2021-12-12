@@ -1,5 +1,5 @@
-import { ArrayType, buildSchema, RefType, SchemaType, Type } from "./api";
-import { Schema } from "index";
+import { ArrayType, buildDataSchema, buildSchema, constructSchema, RefType, SchemaType, Type, TypeConstruct } from "./api";
+import { BinaryTranslation, Schema } from "./binary";
 
 export interface BinaryStructuredObjectsTypes {
   [key: string]: Type;
@@ -9,8 +9,8 @@ export interface BinaryStructuredObjectsSchemas {
 }
 
 export class BinaryStructuredObjectsSchema {
-  public types: BinaryStructuredObjectsTypes;
-  public schemas: BinaryStructuredObjectsSchemas;
+  private types: BinaryStructuredObjectsTypes;
+  private schemas: BinaryStructuredObjectsSchemas;
 
   constructor(schema: string);
   constructor(types: BinaryStructuredObjectsTypes, schemas: BinaryStructuredObjectsSchemas);
@@ -24,18 +24,18 @@ export class BinaryStructuredObjectsSchema {
     }
   }
 
-  throwError(error: string, line: number, column: number) {
+  private throwError(error: string, line: number, column: number) {
     throw new Error(`Syntax Error in Schema, ${error} at: ${line + 1}:${column + 1}`);
   }
 
-  throwUnexpectedToken(line: number, column: number) {
+  private throwUnexpectedToken(line: number, column: number) {
     this.throwError('found unexpected token', line, column);
   }
-  throwUnexpectedEOL(line: number, column: number) {
+  private throwUnexpectedEOL(line: number, column: number) {
     this.throwError('unexpected end of line', line, column);
   }
 
-  parseInterface(line: number, lines: string[]): [SchemaType, number] {
+  private parseInterface(line: number, lines: string[]): [SchemaType, number] {
     const data: SchemaType = {
       kind: 'schema',
       type: {
@@ -123,7 +123,7 @@ export class BinaryStructuredObjectsSchema {
     return [data, l + 1];
   }
 
-  parseType(tokens: IterableIterator<RegExpMatchArray>, line: number, lines: string[]): [number, number] {
+  private parseType(tokens: IterableIterator<RegExpMatchArray>, line: number, lines: string[]): [number, number] {
     let token: IteratorResult<RegExpMatchArray, undefined>
     
     token = tokens.next();
@@ -177,7 +177,7 @@ export class BinaryStructuredObjectsSchema {
     return [l, 0];
   }
 
-  parse(schema: string) {
+  private parse(schema: string) {
     this.types = {};
     this.schemas = {};
 
@@ -225,5 +225,41 @@ export class BinaryStructuredObjectsSchema {
 
       col = 0;
     }
+  }
+
+  public setConstructor(name: string, constructor: (data: TypeConstruct) => any) {
+    const type = this.types[name];
+    if (!type) throw new Error(`Type ${name} does not exist`);
+    if (type.kind !== 'schema') throw new Error(`Type ${name} is not a schema`);
+
+    (type as SchemaType).construct = constructor;
+  }
+
+  public encode(name: string, data: any): Uint8Array {
+    const type = this.types[name];
+    if (!type) throw new Error(`Type ${name} does not exist`);
+    if (type.kind !== 'schema') throw new Error(`Type ${name} is not a schema`);
+
+    const schema = this.schemas[name];
+    if (!schema) throw new Error(`Schema ${name} does not exist`);
+
+    const intermediate = buildDataSchema(this.types, type as SchemaType, data);
+    const binary = BinaryTranslation.build(intermediate, schema);
+
+    return binary;
+  }
+
+  public decode(name: string, data: Uint8Array): any {
+    const type = this.types[name];
+    if (!type) throw new Error(`Type ${name} does not exist`);
+    if (type.kind !== 'schema') throw new Error(`Type ${name} is not a schema`);
+
+    const schema = this.schemas[name];
+    if (!schema) throw new Error(`Schema ${name} does not exist`);
+
+    const intermediate = BinaryTranslation.parse(data, schema);
+    const result = constructSchema(this.types, type as SchemaType, intermediate);
+
+    return result;
   }
 }
