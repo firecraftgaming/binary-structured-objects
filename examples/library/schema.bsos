@@ -1,0 +1,24 @@
+type ID string
+
+type Book {
+  id ID
+  title string
+  author string
+  pages number
+  bestSeller boolean
+  reviews? []string
+}
+
+type Library {
+  id ID
+  name string
+  books []Book
+}
+
+// we define a application type that should be used as a schema to define the main save file
+type Application {
+  libraries []Library
+}
+
+schema Library
+schema Application
