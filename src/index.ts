@@ -3,6 +3,12 @@ import * as fs from "fs";
 export type SchemaString = {
   type: 'string';
 };
+export type SchemaNumber = {
+  type: 'number';
+};
+export type SchemaBoolean = {
+  type: 'boolean';
+};
 export type SchemaTuple = {
   type: 'tuple';
 
@@ -20,8 +26,10 @@ export type Schema = {
   optionals: Array<SchemaType>;
 };
 
-export type Result = string | Array<Result>;
-export type SchemaType = SchemaString | SchemaTuple | SchemaArray | Schema;
+export type BasicResult = string | number | boolean;
+export type Result = BasicResult | Array<Result>;
+export type SchemaBasicType = SchemaString | SchemaNumber | SchemaBoolean;
+export type SchemaType = SchemaBasicType | SchemaTuple | SchemaArray | Schema;
 
 export const string = (): SchemaString => ({
   type: 'string',
@@ -52,6 +60,13 @@ export class BinaryLanguageFile {
       case 'string':
         if (typeof value !== 'string') throw new Error('string value is not string');
         return this.buildString(value, type);
+      case 'number':
+        if (typeof value !== 'number') throw new Error('number value is not number');
+        return this.buildNumber(value);
+      case 'boolean':
+        if (typeof value !== 'boolean') throw new Error('boolean value is not boolean');
+        return this.buildBoolean(value);
+
       case 'tuple':
         if (!Array.isArray(value)) throw new Error('tuple value is not array');
         return this.buildTuple(value, type);
@@ -62,6 +77,10 @@ export class BinaryLanguageFile {
         if (!Array.isArray(value)) throw new Error('schema value is not array');
         return this.buildSchema(value, type);
     }
+  }
+
+  static buildBoolean(value: boolean): Uint8Array {
+    return new Uint8Array([value ? 1 : 0]);
   }
 
   static buildNumber(value: number): Uint8Array {
@@ -160,6 +179,7 @@ export class BinaryLanguageFile {
     }
 
     let optional = 0;
+    // TODO: optional integer can only go to 2 ^ 32 which means there are only 32 optional values allowed within the bit mask, this should be changed to a bit array
 
     for (let i = 0; i < structure.optionals.length; i++) {
       const value = values[i + structure.required.length];
@@ -204,7 +224,12 @@ export class BinaryLanguageFile {
   static parseType(bytes: Uint8Array, pos: number, type: SchemaType): [Result, number] {
     switch (type.type) {
       case 'string':
-        return this.parseString(bytes, pos, type);
+        return this.parseString(bytes, pos);
+      case 'number':
+        return this.parseNumber(bytes, pos);
+      case 'boolean':
+        return this.parseBoolean(bytes, pos);
+
       case 'tuple':
         return this.parseTuple(bytes, pos, type);
       case 'array':
@@ -212,6 +237,12 @@ export class BinaryLanguageFile {
       case 'schema':
         return this.parseSchema(bytes, pos, type);
     }
+  }
+
+  static parseBoolean(bytes: Uint8Array, pos: number): [boolean, number] {
+    if (bytes[pos] === 0) return [false, pos + 1];
+    if (bytes[pos] === 1) return [true, pos + 1];
+    throw new Error('invalid boolean');
   }
 
   static parseNumber(bytes: Uint8Array, pos: number): [number, number] {
@@ -226,7 +257,7 @@ export class BinaryLanguageFile {
     return [value, pos + i + 1];
   }
 
-  static parseString(bytes: Uint8Array, pos: number, _structure: SchemaString): [Result, number] {
+  static parseString(bytes: Uint8Array, pos: number): [Result, number] {
     let length: number;
     [length, pos] = this.parseNumber(bytes, pos);
 
