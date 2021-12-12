@@ -76,44 +76,57 @@ export function constructSchema(types: BinaryStructuredObjectsSchema['types'], t
   return constructor(data);
 }
 
-function buildType(types: BinaryStructuredObjectsSchema['types'], type: Type): AnySchema {
+function buildType(types: BinaryStructuredObjectsSchema['types'], type: Type, cached = new Map<string, AnySchema>(), name?: string): AnySchema {
   switch (type.kind) {
-    case 'ref':
+    case 'ref': {
       const refType = types[type.type];
       if (!refType) return {
         type: type.type
       } as SchemaBasicType;
 
-      return buildType(types, refType);
-    case 'array':
-      const arrayType = buildType(types, type.type);
-      return {
+      if (name && cached.has(name)) return cached.get(name);
+
+      const result = buildType(types, refType, cached, type.type);
+      if (name) cached.set(name, result);
+
+      return result;
+    }
+    case 'array': {
+      if (name && cached.has(name)) return cached.get(name);
+      
+      const arrayType = buildType(types, type.type, cached);
+      const result = {
         type: 'array',
         value: arrayType,
       } as SchemaArray;
+      
+      if (name) cached.set(name, result);
+      return result;
+    }
     case 'schema':
-      return buildSchema(types, type);
+      if (name && cached.has(name)) return cached.get(name);
+      return buildSchema(types, type, cached, name);
   }
 }
 
-export function buildSchema(types: BinaryStructuredObjectsSchema['types'], type: SchemaType): Schema {
-  const required = [];
-  const optionals = [];
+export function buildSchema(types: BinaryStructuredObjectsSchema['types'], type: SchemaType, cached = new Map<string, AnySchema>(), name?: string): Schema {
+  const schema: Schema = {
+    type: 'schema',
+
+    required: [],
+    optionals: [],
+  };
+
+  if (name) cached.set(name, schema);
+
   const keys = Object.keys(type.type);
   for (let i = 0; i < keys.length; i++) {
     const key = keys[i];
     const type_data = type.type[key];
 
-    const inner_type = buildType(types, type_data.type);
-    if (type_data.optional) optionals.push(inner_type); else required.push(inner_type);
+    const inner_type = buildType(types, type_data.type, cached);
+    if (type_data.optional) schema.optionals.push(inner_type); else schema.required.push(inner_type);
   }
-
-  const schema: Schema = {
-    type: 'schema',
-
-    required,
-    optionals,
-  };
 
   return schema;
 }

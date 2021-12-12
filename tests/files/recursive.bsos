@@ -1,0 +1,6 @@
+type Test {
+  name string
+  tests []Test
+}
+
+schema Test

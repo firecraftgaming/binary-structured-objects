@@ -3,8 +3,10 @@ import { expect } from 'chai';
 
 import * as fs from 'fs';
 import { BinaryStructuredObjectsSchema, BinaryStructuredObjectsTypes } from '../src/schema';
+import { Schema } from '../src/binary';
 
 const file = fs.readFileSync(__dirname + '/files/schema.bsos', 'utf8');
+const file2 = fs.readFileSync(__dirname + '/files/recursive.bsos', 'utf8');
 const testing_types: BinaryStructuredObjectsTypes = {
   ID: {
     kind: 'ref',
@@ -146,7 +148,40 @@ should;
   
   @test 'test building BSOS types from schema file'() {
     const schema = new BinaryStructuredObjectsSchema(file);
-    expect(schema.types).to.deep.equal(testing_types);
-    expect(schema.schemas).to.deep.equal(test_schemas);
+    expect(schema['types']).to.deep.equal(testing_types);
+    expect(schema['schemas']).to.deep.equal(test_schemas);
+  }
+
+  @test 'test building BSOS types from schema file with circuling types'() {
+    const schema = new BinaryStructuredObjectsSchema(file2);
+
+    const test_schema = {
+      type: 'schema',
+      required: [
+        {
+          type: 'string',
+        },
+      ],
+      optionals: []
+    } as Schema;
+
+    test_schema.required.push({
+      type: 'array',
+      value: {
+        type: 'schema',
+  
+        required: [
+          {
+            type: 'string',
+          },
+          {
+            type: 'array',
+            value: test_schema
+          },
+        ],
+        optionals: []
+      }
+    });
+    expect(schema['schemas'].Test).to.deep.equal(test_schema);
   }
 }

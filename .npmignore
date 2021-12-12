@@ -1,7 +1,11 @@
-node_modules
-yarn.lock
-tsconfig.json
-tests
-src
-.gitignore
 examples
+node_modules
+src
+tests
+vscode-extension
+.gitignore
+.mocharc.json
+register.js
+tsconfig.json
+webpack.config.js
+yarn.lock
