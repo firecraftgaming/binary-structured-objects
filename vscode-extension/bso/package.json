@@ -1,0 +1,20 @@
+{
+  "name": "bso",
+  "version": "0.0.3",
+  "engines": {
+      "vscode": ">=0.9.0-pre.1"
+  },
+  "publisher": "firecraftgaming",
+  "contributes": {
+      "languages": [{
+          "id": "bso",
+          "aliases": ["Binary Structured Objects", "Binary Structured Objects Schema", "BSOS", "BSO", "bsos", "bso"],
+          "extensions": [".bsos", ".bso"]
+      }],
+      "grammars": [{
+          "language": "bso",
+          "scopeName": "source.bso",
+          "path": "./syntaxes/bso.tmLanguage.json"
+      }]
+  }
+}

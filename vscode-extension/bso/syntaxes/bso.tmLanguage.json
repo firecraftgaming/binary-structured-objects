@@ -1,0 +1,85 @@
+{
+  "name": "Binary Structured Objects",
+  "scopeName": "source.bso",
+  "patterns": [
+    {
+      "include": "#keywords"
+    },
+    {
+      "include": "#interface"
+    },
+    {
+      "include": "#comments"
+    }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.double-slash.bso",
+          "match": "\\/\\/[^\\n]*"
+        }
+      ]
+    },
+    "keywords": {
+      "patterns": [
+        {
+          "include": "#type"
+        },
+        {
+          "include": "#schema"
+        }
+      ]
+    },
+    "type": {
+      "match": "(?:\\s|^)(type)\\s*(\\w+)\\s*(?:\\[\\])*(\\w*)",
+      "captures": {
+        "1": {
+          "name": "keyword.control.type.bso"
+        },
+        "2": {
+          "name": "entity.name.type.bso"
+        },
+        "3": {
+          "name": "entity.name.type.bso"
+        }
+      }
+    },
+    "schema": {
+      "match": "(?:\\s|^)(schema)\\s*(\\w*)",
+      "captures": {
+        "1": {
+          "name": "keyword.control.schema.bso"
+        },
+        "2": {
+          "name": "entity.name.type.bso"
+        }
+      }
+    },
+
+    "interface": {
+      "begin": "{",
+      "end": "}",
+
+      "patterns": [
+        {
+          "include": "#type-def"
+        },
+        {
+          "include": "#comments"
+        }
+      ]
+    },
+    "type-def": {
+      "match": "\\b(\\w*)(\\??)\\s(?:\\[\\])*(\\w*)\\b",
+      "captures": {
+        "1": {
+          "name": "entity.name.tag.bso"
+        },
+        "3": {
+          "name": "entity.name.type.bso"
+        }
+      }
+    }
+  }
+}

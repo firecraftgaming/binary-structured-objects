@@ -1,0 +1,22 @@
+// this is an alias
+type ID string
+
+// this is a schema
+type Book {
+  id ID
+  title string
+  author string
+  pages number
+  bestSeller boolean
+  reviews? []string
+}
+
+// this is a schema
+type Library {
+  id ID
+  name string
+  books []Book
+}
+
+// the schema keyword means that this type should be built as a binary schema at top level
+schema Library
