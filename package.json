@@ -1,6 +1,6 @@
 {
   "name": "binary-structured-objects",
-  "version": "0.0.3",
+  "version": "0.0.4",
   "description": "Binary Structured Objects is a javascript library for creating data schemas and serialize or deserialize javascript to and from binary",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",
