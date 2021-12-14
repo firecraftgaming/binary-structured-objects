@@ -1,0 +1,104 @@
+type ID string
+
+type AlignHorizontal string // left, center, right. change to enum / union when possible
+type AlignVertical string  // top, middle, bottom. change to enum / union when possible
+
+type Position {
+  x number
+  y number
+
+  width number
+  height number
+
+  alignVertical AlignVertical
+  alignHorizontal AlignHorizontal
+}
+
+type Font {
+  size? number
+  family? string
+  weight? string
+  style? string
+  lineHeight? number
+}
+
+type LinkedSource {
+  type string
+  options {
+    score_id? ID
+    timer_id? ID
+  }
+}
+
+type Element {
+  name? string
+  type string
+
+  position Position
+
+  text? string
+
+  font? Font
+  color? string
+
+  alignVertical? AlignVertical
+  alignHorizontal? AlignHorizontal
+
+  linked? LinkedSource
+  media? string
+  shape? string
+}
+
+type Theme {
+  name string
+
+  textElement Element
+  elements []Element
+}
+
+type Override {
+  screen ID
+
+  disabledLayers? []string // this could be converted to a bit map to save space. Which would only require a single byte or 3 bits. 00x for media, 0x0 for slide, x00 for message
+  theme? Theme
+}
+
+type Media string // change this to be union string type when possible
+type SlideContent {
+  text? string
+  media? Media
+}
+type SlideTheme {
+  linked? ID
+  custom? Theme
+}
+
+type Slide {
+  id ID
+
+  content SlideContent
+  theme SlideTheme
+
+  disableOverrides boolean
+  group? ID
+}
+
+type Presentation {
+  id ID
+  name string
+
+  disableLookOverrides boolean
+  overrides []Override
+
+  slides []Slide
+}
+
+type Library {
+  id ID
+  name string
+
+  presentations []Presentation
+}
+
+schema Presentation
+schema Library

@@ -38,9 +38,7 @@ export class BinaryStructuredObjectsSchema {
   private parseInterface(line: number, lines: string[]): [SchemaType, number] {
     const data: SchemaType = {
       kind: 'schema',
-      type: {
-
-      }
+      type: {}
     };
 
     const regex = new RegExp('(?:[^\\s\\w])|(?:[^\\s\\W]+)', 'g');
@@ -79,7 +77,7 @@ export class BinaryStructuredObjectsSchema {
         }
 
         if (next.value[0] === '{') {
-          const [inner_data, line] = this.parseInterface(i, lines);
+          const [inner_data, line] = this.parseInterface(i + 1, lines);
           i = line - 1;
           data.type[value] = {
             type: inner_data,
@@ -115,7 +113,13 @@ export class BinaryStructuredObjectsSchema {
           };
 
           const last = tokens.next();
-          if (!last.done) this.throwUnexpectedToken(i, last.value.index);
+          if (!last.done) {
+            if (last.value[0] === '/') {
+              const next = tokens.next();
+              if (next.value[0] === '/') break;
+            }
+            this.throwUnexpectedToken(i, last.value.index);
+          }
         }
       }
     }
@@ -228,7 +232,7 @@ export class BinaryStructuredObjectsSchema {
   }
 
   public setConstructor(name: string, constructor: (data: TypeConstruct) => any) {
-    const type = this.types[name];
+    const type = this.types?.[name];
     if (!type) throw new Error(`Type ${name} does not exist`);
     if (type.kind !== 'schema') throw new Error(`Type ${name} is not a schema`);
 

@@ -7,6 +7,8 @@ import { Schema } from '../src/binary';
 
 const file = fs.readFileSync(__dirname + '/files/schema.bsos', 'utf8');
 const file2 = fs.readFileSync(__dirname + '/files/recursive.bsos', 'utf8');
+const file3 = fs.readFileSync(__dirname + '/files/large.bsos', 'utf8');
+
 const testing_types: BinaryStructuredObjectsTypes = {
   ID: {
     kind: 'ref',
@@ -183,5 +185,8 @@ should;
       }
     });
     expect(schema['schemas'].Test).to.deep.equal(test_schema);
+  }
+  @test 'test building BSOS types from large schema file'() {
+    expect(() => new BinaryStructuredObjectsSchema(file3)).to.not.throw();
   }
 }
