@@ -32,7 +32,7 @@
       ]
     },
     "type": {
-      "match": "(?:\\s|^)(type)\\s*(\\w+)\\s*(?:\\[\\])*(\\w*)",
+      "match": "(?:\\s|^)(type)\\s+(\\w+)\\s+(?:\\[\\])*(\\w*)",
       "captures": {
         "1": {
           "name": "keyword.control.type.bso"
@@ -46,7 +46,7 @@
       }
     },
     "schema": {
-      "match": "(?:\\s|^)(schema)\\s*(\\w*)",
+      "match": "(?:\\s|^)(schema)\\s+(\\w*)",
       "captures": {
         "1": {
           "name": "keyword.control.schema.bso"
@@ -71,15 +71,36 @@
       ]
     },
     "type-def": {
-      "match": "\\b(\\w*)(\\??)\\s(?:\\[\\])*(\\w*)\\b",
-      "captures": {
-        "1": {
-          "name": "entity.name.tag.bso"
+      "patterns": [
+        {
+          "match": "\\b(\\w*)(\\??)\\s+(?:\\[\\])*(\\w*)\\b",
+          "captures": {
+            "1": {
+              "name": "entity.name.tag.bso"
+            },
+            "3": {
+              "name": "entity.name.type.bso"
+            }
+          }
         },
-        "3": {
-          "name": "entity.name.type.bso"
+        {
+          "begin": "\\b(\\w*)\\s*(\\??){",
+          "end": "}",
+          "beginCaptures": {
+            "1": {
+              "name": "entity.name.tag.bso"
+            }
+          },
+          "patterns": [
+            {
+              "include": "#type-def"
+            },
+            {
+              "include": "#comments"
+            }
+          ]
         }
-      }
+      ]
     }
   }
 }

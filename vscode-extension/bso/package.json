@@ -1,6 +1,6 @@
 {
   "name": "bso",
-  "version": "0.0.3",
+  "version": "0.0.5",
   "engines": {
       "vscode": ">=0.9.0-pre.1"
   },
